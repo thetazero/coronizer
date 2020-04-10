@@ -63,9 +63,14 @@ let statesSelected = ["California"]
 function intialize() {
     MakeChart('cases', 'cases')
     MakeChart('deaths', 'deaths')
+    MakeChart('deaths-increase', 'deaths-increase', 'daily deaths')
+    MakeChart('cases-increase', 'cases-increase', 'daily cases')
 }
 
-function MakeChart(id, type) {
+function MakeChart(id, type, name) {
+    if (!name) {
+        name = type
+    }
     let ctx = document.getElementById(id).getContext('2d');
     allCharts[id] = new Chart(ctx, {
         type: 'line',
@@ -95,7 +100,7 @@ function MakeChart(id, type) {
             },
 
             title: {
-                text: `Coronavirus ${type} (${State.log ? "Logarithmic" : "Linear"} scale)`,
+                text: `Coronavirus ${name} (${State.log ? "Logarithmic" : "Linear"} scale)`,
                 display: true,
                 fontSize: 24
             }
@@ -119,7 +124,6 @@ function updateData() {
     let size = data.state['Washington'].length
     for (prop in allCharts) {
         let chart = allCharts[prop]
-        console.log(chart)
         chart.options.title.text = `Coronavirus ${prop} (${State.log ? "Logarithmic" : "Linear"} scale)`
         chart.data.datasets = []
         chart.data.datasets = State.states.map((state, index) => {
@@ -127,12 +131,23 @@ function updateData() {
             for (let i = size - data.state[state].length; i > 0; i--) {
                 theseData.push(0)
             }
-            theseData.push(...data.state[state].map(e => {
-                e[prop] = parseInt(e[prop])
-                if (State.log) {
-                    return Math.log(e[prop])
+            theseData.push(...data.state[state].map((e, i, arr) => {
+                let ret = 0
+                if (prop == 'deaths-increase') {
+                    if (i > 0) {
+                        ret = parseInt(e.deaths) - parseInt(arr[i - 1].deaths)
+                    }
+                } else if (prop == 'cases-increase') {
+                    if (i > 0) {
+                        ret = parseInt(e.cases) - parseInt(arr[i - 1].cases)
+                    }
+                } else {
+                    ret = parseInt(e[prop])
                 }
-                return e[prop]
+                if (State.log && ret > 0) {
+                    return Math.log(ret)
+                }
+                return ret
             }))
             let hue = index * 360 / State.states.length
             return {
