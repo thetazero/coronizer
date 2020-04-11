@@ -13,6 +13,7 @@
     <input type="text" placeholder="State" id="state_input" value="California">
     <input type="button" value="Add State" onclick="addState()">
     <input type="button" onclick="toggleLog()" value="Toggle Log">
+    <input type="button" onclick="toggleProp()" value="Toggle Proportion">
     <ul id="selected-states">
 
     </ul>
@@ -28,6 +29,10 @@
     <div class="chart-container">
         <canvas id="deaths-increase"></canvas>
     </div>
+    1. uses the <a href='https://github.com/nytimes/covid-19-data'>ny times dataset</a>. <br>
+    2. uses wikipedia's <a
+        href='https://en.wikipedia.org/wiki/List_of_states_and_territories_of_the_United_States_by_population'>list of
+        states by populations</a>.
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
     <script src="main.js"></script>
 </body>

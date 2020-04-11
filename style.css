@@ -17,6 +17,14 @@ input {
   transition: background-color 200ms;
 }
 
+a:visited {
+  color: hsl(240, 80%, 80%);
+}
+
+a {
+  color: hsl(200, 80%, 80%);
+}
+
 input[type="button"] {
   cursor: pointer;
 }

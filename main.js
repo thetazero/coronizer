@@ -4,22 +4,28 @@ const counties = "https://raw.githubusercontent.com/nytimes/covid-19-data/master
 
 let data = {}
 let allCharts = {}
+let allNames = {}
 let State = {
     log: false,
-    states: []
+    states: [],
+    prop: false
 }
 load().then(() => {
     intialize()
 })
 
+let statePopulations;
 async function load() {
     const title = document.querySelector("#title")
     let start = Date.now()
-    let [worldData, stateData, countyData] = await Promise.all(
+    let [worldData, stateData, countyData, statePop] = await Promise.all(
         [ƒ(world, "json"),
         ƒ(states, "csv"),
-        ƒ(counties, "csv")]
+        ƒ(counties, "csv"), 
+        ƒ('https://thetazero.github.io/coronizer/populations.json', 'json')]
     )
+    console.log(statePop)
+    statePopulations = statePop
     stateData = stateParse(stateData)
     // console.log(worldData, stateData, countyData)
     data.world = worldData
@@ -72,6 +78,7 @@ function MakeChart(id, type, name) {
         name = type
     }
     let ctx = document.getElementById(id).getContext('2d');
+    allNames[id] = name
     allCharts[id] = new Chart(ctx, {
         type: 'line',
         data: {
@@ -100,7 +107,7 @@ function MakeChart(id, type, name) {
             },
 
             title: {
-                text: `Coronavirus ${name} (${State.log ? "Logarithmic" : "Linear"} scale)`,
+                text: `Coronavirus ${name} (${State.log ? "Logarithmic" : "Linear"} scale${State.prop ? ' & proportional' : ''})`,
                 display: true,
                 fontSize: 24
             }
@@ -124,7 +131,8 @@ function updateData() {
     let size = data.state['Washington'].length
     for (prop in allCharts) {
         let chart = allCharts[prop]
-        chart.options.title.text = `Coronavirus ${prop} (${State.log ? "Logarithmic" : "Linear"} scale)`
+        let name = allNames[prop]
+        chart.options.title.text = `Coronavirus ${name} (${State.log ? "Logarithmic" : "Linear"} scale${State.prop ? ' & proportional' : ''})`
         chart.data.datasets = []
         chart.data.datasets = State.states.map((state, index) => {
             let theseData = []
@@ -143,6 +151,9 @@ function updateData() {
                     }
                 } else {
                     ret = parseInt(e[prop])
+                }
+                if (State.prop) {
+                    return ret / statePopulations[state]
                 }
                 if (State.log && ret > 0) {
                     return Math.log(ret)
@@ -163,5 +174,10 @@ function updateData() {
 
 function toggleLog() {
     State.log = !State.log
+    updateData()
+}
+
+function toggleProp() {
+    State.prop = !State.prop
     updateData()
 }
