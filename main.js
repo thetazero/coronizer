@@ -15,6 +15,18 @@ load().then(() => {
 })
 
 let statePopulations;
+
+let zoom = {
+    pan: {
+        enabled: true,
+        mode: 'x'
+    },
+    zoom: {
+        enabled: true,
+        mode: 'x'
+    }
+}
+
 async function load() {
     const title = document.querySelector("#title")
     let start = Date.now()
@@ -88,6 +100,9 @@ function MakeChart(id, type, name) {
             datasets: []
         },
         options: {
+            plugins: {
+                zoom: zoom
+            },
             responsive: true,
             scales: {
                 xAxes: [{
@@ -105,7 +120,6 @@ function MakeChart(id, type, name) {
                     }
                 }]
             },
-
             title: {
                 text: `Coronavirus ${name} (${State.log ? "Logarithmic" : "Linear"} scale${State.prop ? ' & proportional' : ''})`,
                 display: true,
@@ -160,7 +174,7 @@ function updateData() {
                 }
                 return ret
             }))
-            let hue = index * 360 / State.states.length
+            let hue = index * 360 / State.states.length + 40
             return {
                 label: state,
                 data: theseData,
