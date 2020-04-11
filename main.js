@@ -21,7 +21,7 @@ async function load() {
     let [worldData, stateData, countyData, statePop] = await Promise.all(
         [ƒ(world, "json"),
         ƒ(states, "csv"),
-        ƒ(counties, "csv"), 
+        ƒ(counties, "csv"),
         ƒ('https://thetazero.github.io/coronizer/populations.json', 'json')]
     )
     console.log(statePop)
@@ -153,10 +153,10 @@ function updateData() {
                     ret = parseInt(e[prop])
                 }
                 if (State.prop) {
-                    return ret / statePopulations[state]
+                    ret /= statePopulations[state]
                 }
                 if (State.log && ret > 0) {
-                    return Math.log(ret)
+                    ret = Math.log(ret)
                 }
                 return ret
             }))
