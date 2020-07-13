@@ -8,7 +8,8 @@ let allNames = {}
 let State = {
     log: false,
     states: [],
-    prop: false
+    prop: false,
+    average: false,
 }
 load().then(() => {
     intialize()
@@ -39,7 +40,6 @@ async function load() {
     console.log(statePop)
     statePopulations = statePop
     stateData = stateParse(stateData)
-    // console.log(worldData, stateData, countyData)
     data.world = worldData
     data.state = stateData
     data.countyData = countyData
@@ -146,14 +146,25 @@ function updateData() {
     for (prop in allCharts) {
         let chart = allCharts[prop]
         let name = allNames[prop]
-        chart.options.title.text = `Coronavirus ${name} (${State.log ? "Logarithmic" : "Linear"} scale${State.prop ? ' & proportional' : ''})`
-        chart.data.datasets = []
+        chart.options.title.text = `Coronavirus ${name} (${State.log ? "Logarithmic" : "Linear"} scale${State.prop ? ' & proportional' : ''}${State.average ? ' & average of 5' : ''})`
         chart.data.datasets = State.states.map((state, index) => {
             let theseData = []
             for (let i = size - data.state[state].length; i > 0; i--) {
                 theseData.push(0)
             }
             theseData.push(...data.state[state].map((e, i, arr) => {
+                if (prop.includes('increase')) {
+                    if (State.average && i < 5) {
+                        return 0
+                    }
+                    if (State.average) {
+                        if (prop == 'deaths-increase') {
+                            return (parseInt(e.deaths) - parseInt(arr[i - 5].deaths)) / 5
+                        } else if (prop == 'cases-increase') {
+                            return (parseInt(e.deaths) - parseInt(arr[i - 5].cases)) / 5
+                        }
+                    }
+                }
                 let ret = 0
                 if (prop == 'deaths-increase') {
                     if (i > 0) {
@@ -177,7 +188,7 @@ function updateData() {
             let hue = index * 360 / State.states.length + 40
             return {
                 label: state,
-                data: theseData,
+                data: theseData.slice(State.average ? 5 : 0),
                 backgroundColor: `hsla(${hue}, 100%, 69%, 0.2)`,
                 borderColor: `hsla(${hue}, 100%, 69%, 1)`,
             }
@@ -193,5 +204,10 @@ function toggleLog() {
 
 function toggleProp() {
     State.prop = !State.prop
+    updateData()
+}
+
+function toggle5DayAverage() {
+    State.average = !State.average
     updateData()
 }
